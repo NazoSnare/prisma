@@ -45,6 +45,13 @@ import { mssqlPreparedStatement } from './utils/mssqlPreparedStatement'
 import { tryLoadEnvs } from '@prisma/sdk'
 import { validatePrismaClientOptions } from './utils/validatePrismaClientOptions'
 
+// This is work around see https://github.com/microsoft/TypeScript/issues/17002
+declare global {
+  interface ArrayConstructor {
+    isArray(arg: any[]): arg is any[];
+    isArray(arg: any): arg is readonly any[];
+  }
+}
 export type ErrorFormat = 'pretty' | 'colorless' | 'minimal'
 
 export type Datasource = {
@@ -527,7 +534,7 @@ export function getPrismaClient(config: GetPrismaClientOptions): any {
           case 'sqlite':
           case 'mysql': {
             const queryInstance = sqlTemplateTag.sqltag(
-              stringOrTemplateStringsArray as any,
+              stringOrTemplateStringsArray,
               ...values,
             )
 
@@ -541,7 +548,7 @@ export function getPrismaClient(config: GetPrismaClientOptions): any {
 
           case 'postgresql': {
             const queryInstance = sqlTemplateTag.sqltag(
-              stringOrTemplateStringsArray as any,
+              stringOrTemplateStringsArray,
               ...values,
             )
 
@@ -554,7 +561,7 @@ export function getPrismaClient(config: GetPrismaClientOptions): any {
           }
 
           case 'sqlserver': {
-            query = mssqlPreparedStatement(stringOrTemplateStringsArray as any)
+            query = mssqlPreparedStatement(stringOrTemplateStringsArray)
             parameters = {
               values: serializeRawParameters(values),
               __prismaRawParamaters__: true,
@@ -567,7 +574,7 @@ export function getPrismaClient(config: GetPrismaClientOptions): any {
         switch (activeProvider) {
           case 'sqlite':
           case 'mysql':
-            query = stringOrTemplateStringsArray.sql
+            query = stringOrTemplateStringsArray.sql 
             break
           case 'postgresql':
             query = stringOrTemplateStringsArray.text
